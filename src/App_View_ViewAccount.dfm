@@ -11,7 +11,7 @@ object ViewAccount: TViewAccount
     Height = 240
     Align = alClient
     TabOrder = 0
-    object NameLabel: TLabel
+    object SiteNameLabel: TLabel
       Left = 24
       Top = 24
       Width = 24
@@ -46,7 +46,7 @@ object ViewAccount: TViewAccount
       Height = 13
       Caption = #20633#32771
     end
-    object DoInputAddress: TEdit
+    object DoShowAddress: TEdit
       Left = 77
       Top = 53
       Width = 220
@@ -54,7 +54,7 @@ object ViewAccount: TViewAccount
       ReadOnly = True
       TabOrder = 0
     end
-    object DoInputUserName: TEdit
+    object DoShowUserName: TEdit
       Left = 77
       Top = 85
       Width = 220
@@ -62,7 +62,7 @@ object ViewAccount: TViewAccount
       ReadOnly = True
       TabOrder = 1
     end
-    object DoInputRemarks: TMemo
+    object DoShowRemarks: TMemo
       Left = 77
       Top = 149
       Width = 220
@@ -77,14 +77,16 @@ object ViewAccount: TViewAccount
       Height = 25
       Caption = #12463#12522#12483#12503#12508#12540#12489#12395#12467#12500#12540
       TabOrder = 3
+      OnClick = OnDoCopyToClipBoard
     end
-    object DoChoose: TComboBox
+    object DoChooseSite: TComboBox
       Left = 77
       Top = 21
       Width = 220
       Height = 21
       Style = csDropDownList
       TabOrder = 4
+      OnSelect = OnDoChoose
     end
   end
 end

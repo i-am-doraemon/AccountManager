@@ -12,6 +12,7 @@ object Start: TStart
   Font.Style = []
   Menu = MainMenu
   OldCreateOrder = False
+  OnClose = OnCloseApp
   PixelsPerInch = 96
   TextHeight = 13
   inline DoAuthenticate: TAuthenticate
@@ -35,9 +36,9 @@ object Start: TStart
     Top = 224
     object FileMenu: TMenuItem
       Caption = #12501#12449#12452#12523'(&F)'
-      object DoExit: TMenuItem
+      object DoExitApp: TMenuItem
         Caption = #32066#20102'(&X)'
-        OnClick = OnDoExit
+        OnClick = OnDoExitApp
       end
     end
     object EditMenu: TMenuItem
@@ -54,6 +55,7 @@ object Start: TStart
       object DoRemoveAccount: TMenuItem
         Caption = #12450#12459#12454#12531#12488#12434#21066#38500'(&R)'
         Enabled = False
+        OnClick = OnDoRemoveAccount
       end
     end
     object HelpMenu: TMenuItem

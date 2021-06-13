@@ -11,8 +11,7 @@ object EditAccount: TEditAccount
     Height = 280
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 240
-    object NameLabel: TLabel
+    object SiteNameLabel: TLabel
       Left = 24
       Top = 24
       Width = 24
@@ -47,7 +46,7 @@ object EditAccount: TEditAccount
       Height = 13
       Caption = #20633#32771
     end
-    object DoInputName: TEdit
+    object DoInputSiteName: TEdit
       Left = 77
       Top = 21
       Width = 220
@@ -89,6 +88,7 @@ object EditAccount: TEditAccount
       Height = 25
       Caption = 'OK'
       TabOrder = 5
+      OnClick = OnDoOK
     end
     object DoCancel: TButton
       Left = 136
