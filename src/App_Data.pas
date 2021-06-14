@@ -59,12 +59,15 @@ type
     FList: TList<TAccount>;
     FDelayCall: TDelayCall;
     function GetAccount(Index: Integer): TAccount;
+    function IndexOf(Id: Integer): Integer;
   public
     constructor Create;
     destructor Destroy; override;
     function GetEnumerator: TEnumerator<TAccount>;
+    function GetPassword(Id: Integer): string;
     function Open(Password: string): Boolean;
     function Append(Account: TAccount): Boolean;
+    function Update(Account: TAccount): Boolean;
     function Remove(Account: TAccount): Boolean;
     procedure CopyPasswordToClipBoard(Id: Integer);
     property Account[Index: Integer]: TAccount read GetAccount;
@@ -112,6 +115,37 @@ end;
 function TModel.GetAccount(Index: Integer): TAccount;
 begin
   Result := FList[Index];
+end;
+
+function TModel.GetPassword(Id: Integer): string;
+const
+  STATEMENT = 'SELECT Password FROM Accounts WHERE Id = :Id';
+var
+  Query: TFDQuery;
+begin
+  Query := TFDQuery.Create(nil);
+  try
+    Query.Connection := FDBConnection;
+    Query.Open(STATEMENT, [Id]);
+
+    if not Query.Eof then
+      Result := Query.FieldByName('Password').AsString
+    else
+      Result := '';
+  finally
+    Query.Free;
+  end;
+end;
+
+function TModel.IndexOf(Id: Integer): Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+
+  for I := 0 to FList.Count - 1 do
+    if FList[I].Id = Id then
+      Result := I;
 end;
 
 function TModel.Open(Password: string): Boolean;
@@ -214,6 +248,48 @@ begin
     Result := False;
 end;
 
+function TModel.Update(Account: TAccount): Boolean;
+const
+  STATEMENT = 'UPDATE Accounts SET SiteName = :SiteName,' +
+                                 ' UserName = :UserName,' +
+                                 ' Password = :Password,' +
+                                 ' Address = :Address, Remarks = :Remarks WHERE Id = :Id';
+var
+  Index: Integer;
+  Query: TFDQuery;
+  NumberOfChangedRow: LongInt; // 変更されたレコード数
+begin
+  Query := TFDQuery.Create(nil);
+  try
+    Query.Connection := FDBConnection;
+    Query.SQL.Text := STATEMENT;
+
+    Query.Params.ParamByName('Id').AsInteger := Account.Id;
+    Query.Params.ParamByName('SiteName').AsString := Account.SiteName;
+    Query.Params.ParamByName('UserName').AsString := Account.UserName;
+    Query.Params.ParamByName('Password').AsString := Account.Password;
+    Query.Params.ParamByName('Address').AsString := Account.Address;
+    Query.Params.ParamByName('Remarks').AsString := Account.Remarks;
+
+    NumberOfChangedRow := Query.ExecSQL(False);
+  finally
+    Query.Free;
+  end;
+
+  if NumberOfChangedRow > 0 then
+  begin
+    Result := True;
+
+    Index := IndexOf(Account.Id);
+    FList[Index] := Account;
+
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end
+  else
+    Result := False;
+end;
+
 function TModel.Remove(Account: TAccount): Boolean;
 const
   STATEMENT = 'DELETE FROM Accounts WHERE Id = :Id';
@@ -231,37 +307,21 @@ begin
 
   if NumberOfChangedRow > 0 then
   begin
+    Result := True;
     FList.Remove(Account);
 
     if Assigned(FOnChange) then
       FOnChange(Self);
-
-    Result := True;
   end
   else
     Result := False;
 end;
 
 procedure TModel.CopyPasswordToClipBoard(Id: Integer);
-const
-  STATEMENT = 'SELECT Password FROM Accounts WHERE Id = :Id';
-var
-  Query: TFDQuery;
 begin
-  Query := TFDQuery.Create(nil);
-  try
-    Query.Connection := FDBConnection;
-    Query.Open(STATEMENT, [Id]);
-
-    if not Query.Eof then
-      Clipboard.AsText := Query.FieldByName('Password').AsString
-    else
-      Clipboard.AsText := '';
-
+  Clipboard.AsText := GetPassword(Id);
+  if Clipboard.AsText <> '' then
     FDelayCall.Schedule(6000); // ミリ秒
-  finally
-    Query.Free;
-  end;
 end;
 
 end.

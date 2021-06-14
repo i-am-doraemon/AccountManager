@@ -45,10 +45,16 @@ type
     procedure OnDoOK(Sender: TObject);
   private
     { Private êÈåæ }
+    FId: Integer;
     FOnCancel: TNotifyEvent;
     FOnOK: TAccountNotifyEvent;
+    procedure SetPassword(Password: string);
   public
     { Public êÈåæ }
+    constructor Create(Owner: TComponent); override;
+    procedure Clear;
+    procedure Reset(Account: TAccount);
+    property Password: string write SetPassword;
     property OnCancel: TNotifyEvent read FOnCancel write FOnCancel;
     property OnOK: TAccountNotifyEvent read FOnOK write FOnOK;
   end;
@@ -57,8 +63,42 @@ implementation
 
 {$R *.dfm}
 
+constructor TEditAccount.Create(Owner: TComponent);
+begin
+  inherited;
+  FId := -1;
+end;
+
+procedure TEditAccount.SetPassword(Password: string);
+begin
+  DoInputPassword.Text := Password;
+end;
+
+procedure TEditAccount.Clear;
+begin
+  FId := -1;
+
+  DoInputSiteName.Clear;
+  DoInputUserName.Clear;
+  DoInputPassword.Clear;
+  DoInputAddress.Clear;
+  DoInputRemarks.Clear;
+end;
+
+procedure TEditAccount.Reset(Account: TAccount);
+begin
+  FId := Account.Id;
+
+  DoInputSiteName.Text := Account.SiteName;
+  DoInputUserName.Text := Account.UserName;
+  DoInputPassword.Text := Account.Password;
+  DoInputAddress.Text := Account.Address;
+  DoInputRemarks.Text := Account.Remarks;
+end;
+
 procedure TEditAccount.OnDoCancel(Sender: TObject);
 begin
+  Clear;
   if Assigned(FOnCancel) then
     FOnCancel(Self);
 end;
@@ -75,7 +115,7 @@ begin
   Remarks := DoInputRemarks.Text;
 
   if Assigned(FOnOk) then
-    FOnOK(Self, TAccount.Create(-1, SiteName, UserName, Password, Address, Remarks));
+    FOnOK(Self, TAccount.Create(FId, SiteName, UserName, Password, Address, Remarks));
 end;
 
 end.

@@ -51,6 +51,7 @@ object Start: TStart
       object DoUpdateAccount: TMenuItem
         Caption = #12450#12459#12454#12531#12488#12434#32232#38598'(&E)'
         Enabled = False
+        OnClick = OnDoUpdateAccount
       end
       object DoRemoveAccount: TMenuItem
         Caption = #12450#12459#12454#12531#12488#12434#21066#38500'(&R)'

@@ -42,8 +42,9 @@ type
     procedure OnDoExitApp(Sender: TObject);
     procedure OnDoShowAppVersion(Sender: TObject);
     procedure OnDoAppendAccount(Sender: TObject);
-    procedure OnCloseApp(Sender: TObject; var Action: TCloseAction);
+    procedure OnDoUpdateAccount(Sender: TObject);
     procedure OnDoRemoveAccount(Sender: TObject);
+    procedure OnCloseApp(Sender: TObject; var Action: TCloseAction);
   private
     { Private 宣言 }
     FModel: TModel;
@@ -55,7 +56,7 @@ type
     procedure OnCancelEditing(Sender: TObject);
     procedure OnDidEdit(Sender: TObject; Account: TAccount);
     procedure OnSelectAccount(Sender: TObject; Index: Integer);
-    procedure OnCopyPasswordToClipBoard(Sender: TObject; Index: Integer);
+    procedure OnCopyPasswordToClipBoard(Sender: TObject; Id: Integer);
   public
     { Public 宣言 }
     constructor Create(Owner: TComponent); override;
@@ -95,17 +96,56 @@ begin
   Close;
 end;
 
+procedure TStart.OnDoAuthenticate(Sender: TObject; Password: string);
+begin
+  FModel.Open(Password);
+
+  FViewAccount.Parent := Self;
+  DoAppendAccount.Enabled := True;
+  DoUpdateAccount.Enabled := True;
+  DoRemoveAccount.Enabled := True;
+end;
+
+procedure TStart.OnDoAppendAccount(Sender: TObject);
+begin
+  FEditAccount.Parent := Self;
+end;
+
+procedure TStart.OnDoUpdateAccount(Sender: TObject);
+var
+  Index: Integer;
+  Account: TAccount;
+begin
+  Index := FViewAccount.ItemIndex;
+
+  if Index < 0 then
+    ShowMessage('アカウントが選択されていません。')
+  else
+  begin
+    Account := FModel.Account[Index];
+
+    FViewAccount.Parent := nil;
+    FEditAccount.Parent := Self;
+
+    FEditAccount.Reset(Account);
+    FEditAccount.Password := FModel.GetPassword(Account.Id);
+  end;
+end;
+
 procedure TStart.OnDoRemoveAccount(Sender: TObject);
 var
   Index: Integer;
 begin
   Index := FViewAccount.ItemIndex;
-  ShowMessage(Format('Index = %d', [Index]));
 
   if Index < 0 then
     ShowMessage('アカウントが選択されていません。')
   else
-    FModel.Remove(FModel.Account[Index]);
+  begin
+    if MessageDlg('選択されているアカウントを本当に削除しますか？',
+          mtConfirmation, mbOKCancel, 0, mbCancel) = mrYes then
+      FModel.Remove(FModel.Account[Index]);
+  end;
 end;
 
 procedure TStart.OnDoShowAppVersion(Sender: TObject);
@@ -140,20 +180,6 @@ begin
   end;
 end;
 
-procedure TStart.OnDoAppendAccount(Sender: TObject);
-begin
-  FEditAccount.Parent := Self;
-end;
-
-procedure TStart.OnDoAuthenticate(Sender: TObject; Password: string);
-begin
-  FModel.Open(Password);
-
-  FViewAccount.Parent := Self;
-  DoAppendAccount.Enabled := True;
-  DoRemoveAccount.Enabled := True;
-end;
-
 procedure TStart.OnCancelEditing(Sender: TObject);
 begin
   FEditAccount.Parent := nil;
@@ -162,8 +188,13 @@ end;
 
 procedure TStart.OnDidEdit(Sender: TObject; Account: TAccount);
 begin
-  FModel.Append(Account);
-  FEditAccount.Parent := nil;
+  FEditAccount.Clear;
+
+  if Account.Id < 0 then
+    FModel.Append(Account)
+  else
+    FModel.Update(Account);
+
   FViewAccount.Parent := Self;
 end;
 
@@ -179,9 +210,9 @@ begin
                            Account.Remarks);
 end;
 
-procedure TStart.OnCopyPasswordToClipBoard(Sender: TObject; Index: Integer);
+procedure TStart.OnCopyPasswordToClipBoard(Sender: TObject; Id: Integer);
 begin
-  FModel.CopyPasswordToClipBoard(Index);
+  FModel.CopyPasswordToClipBoard(Id);
 end;
 
 procedure TStart.OnCloseApp(Sender: TObject; var Action: TCloseAction);
