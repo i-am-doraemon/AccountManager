@@ -163,7 +163,7 @@ begin
   else
   begin
     if MessageDlg('選択されているアカウントを本当に削除しますか？',
-          mtConfirmation, mbOKCancel, 0, mbCancel) = mrYes then
+          mtConfirmation, mbOKCancel, 0, mbCancel) = mrOk then
       FModel.Remove(FModel.Account[Index]);
   end;
 end;
