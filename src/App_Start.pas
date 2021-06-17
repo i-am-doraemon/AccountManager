@@ -215,6 +215,7 @@ begin
   else
     FModel.Update(Account);
 
+  FEditAccount.Parent := nil;
   FViewAccount.Parent := Self;
 end;
 
