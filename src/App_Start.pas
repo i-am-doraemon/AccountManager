@@ -4,13 +4,15 @@ interface
 
 uses
   App_Data,
+  App_Utilities,
   App_View_Authenticate,
   App_View_EditAccount,
-  App_Utilities,
+  App_View_SetupPassword,
   App_View_ViewAccount,
 
   System.Classes,
   System.Generics.Collections,
+  System.IOUtils,
   System.SysUtils,
   System.Variants,
 
@@ -33,11 +35,10 @@ type
     HelpMenu: TMenuItem;
     DoExitApp: TMenuItem;
     DoShowAppVersion: TMenuItem;
+    DoSetupPassword: TSetupPassword;
     DoAppendAccount: TMenuItem;
     DoUpdateAccount: TMenuItem;
     DoRemoveAccount: TMenuItem;
-
-    DoAuthenticate: TAuthenticate;
 
     procedure OnDoExitApp(Sender: TObject);
     procedure OnDoShowAppVersion(Sender: TObject);
@@ -48,10 +49,12 @@ type
   private
     { Private 宣言 }
     FModel: TModel;
+    FDoAuthenticate: TAuthenticate;
     FEditAccount: TEditAccount; // アカウントの編集ビュー
     FViewAccount: TViewAccount; // アカウントの閲覧ビュー
 
     procedure OnChangeModel(Sender: TObject);
+    procedure OnDoSetupPassword(Sender: TObject; Password: string);
     procedure OnDoAuthenticate(Sender: TObject; Password: string);
     procedure OnCancelEditing(Sender: TObject);
     procedure OnDidEdit(Sender: TObject; Account: TAccount);
@@ -76,7 +79,10 @@ begin
   FModel := TModel.Create;
   FModel.OnChange := OnChangeModel;
 
-  DoAuthenticate.OnAuthenticate := OnDoAuthenticate;
+  DoSetupPassword.OnSetupPassword := OnDoSetupPassword;
+
+  FDoAuthenticate := TAuthenticate.Create(Self);
+  FDoAuthenticate.OnAuthenticate := OnDoAuthenticate;
 
   FEditAccount := TEditAccount.Create(Self);
   FViewAccount := TViewAccount.Create(Self);
@@ -89,6 +95,9 @@ begin
 
   FViewAccount.OnSelect := OnSelectAccount;
   FViewAccount.OnCopyToClipBoard := OnCopyPasswordToClipBoard;
+
+  if TFile.Exists(FModel.DBFileName) then
+    FDoAuthenticate.Parent := Self;
 end;
 
 procedure TStart.OnDoExitApp(Sender: TObject);
@@ -96,14 +105,25 @@ begin
   Close;
 end;
 
-procedure TStart.OnDoAuthenticate(Sender: TObject; Password: string);
+procedure TStart.OnDoSetupPassword(Sender: TObject; Password: string);
 begin
   FModel.Open(Password);
+  FModel.Close;
 
-  FViewAccount.Parent := Self;
-  DoAppendAccount.Enabled := True;
-  DoUpdateAccount.Enabled := True;
-  DoRemoveAccount.Enabled := True;
+  FDoAuthenticate.Parent := Self;
+end;
+
+procedure TStart.OnDoAuthenticate(Sender: TObject; Password: string);
+begin
+  if FModel.Open(Password) then
+  begin
+    FViewAccount.Parent := Self;
+    DoAppendAccount.Enabled := True;
+    DoUpdateAccount.Enabled := True;
+    DoRemoveAccount.Enabled := True;
+  end
+  else
+    ShowMessage('パスワードが違います。');
 end;
 
 procedure TStart.OnDoAppendAccount(Sender: TObject);

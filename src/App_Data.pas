@@ -28,6 +28,7 @@ uses
 
   System.Classes,
   System.Generics.Collections,
+  System.IOUtils,
   System.SysUtils,
 
   Vcl.Clipbrd,
@@ -59,6 +60,7 @@ type
     FList: TList<TAccount>;
     FDelayCall: TDelayCall;
     function GetAccount(Index: Integer): TAccount;
+    function GetDBFileName: string;
     function IndexOf(Id: Integer): Integer;
   public
     constructor Create;
@@ -69,8 +71,10 @@ type
     function Append(Account: TAccount): Boolean;
     function Update(Account: TAccount): Boolean;
     function Remove(Account: TAccount): Boolean;
+    procedure Close;
     procedure CopyPasswordToClipBoard(Id: Integer);
     property Account[Index: Integer]: TAccount read GetAccount;
+    property DBFileName: string read GetDBFileName;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
@@ -117,6 +121,13 @@ begin
   Result := FList[Index];
 end;
 
+function TModel.GetDBFileName;
+const
+  DB_FILE_EXTENSION = '.sqlite3';
+begin
+  Result := ChangeFileExt(Application.ExeName, DB_FILE_EXTENSION);
+end;
+
 function TModel.GetPassword(Id: Integer): string;
 const
   STATEMENT = 'SELECT Password FROM Accounts WHERE Id = :Id';
@@ -150,8 +161,7 @@ end;
 
 function TModel.Open(Password: string): Boolean;
 var
-  DBType: string;
-  DBName: string;
+  DBType, DBName, EncryptionParamName: string;
   Query: TFDQuery;
   New: TAccount;
 const
@@ -161,14 +171,31 @@ begin
   // データベースへ接続
 
   DBType := 'SQLite';
-  DBName := ChangeFileExt(Application.ExeName, '.sqlite3');
+  DBName := DBFileName;
+
+  // データベースを新規作成する場合と、
+  // 既存のデータベースを開く場合で暗号化パラメータの名称が異なることに注意する。
+
+  if TFile.Exists(DBName) then
+    EncryptionParamName := 'Password'
+  else
+    EncryptionParamName := 'NewPassword';
 
   FDBConnection.Params.Add('DriverID=' + DBType);
   FDBConnection.Params.Add('Database=' + DBName);
+  FDBConnection.Params.Add(EncryptionParamName + '=' + Password);
 
   try
     FDBConnection.Open;
   except
+    // パスワードの誤りによるデータベースの接続例外が一度でも起こると、
+    // 以後、正しいパスワードであっても接続例外が起こる。
+    // 接続例外の発生時にCloseメソッドをコールしても同じなため、
+    // オブジェクトを再作成することとする。
+
+    FDBConnection.Free;
+    FDBConnection := TFDConnection.Create(nil);
+
     Exit(False);
   end;
 
@@ -315,6 +342,12 @@ begin
   end
   else
     Result := False;
+end;
+
+procedure TModel.Close;
+begin
+  FDBConnection.Close;
+  FList.Clear;
 end;
 
 procedure TModel.CopyPasswordToClipBoard(Id: Integer);

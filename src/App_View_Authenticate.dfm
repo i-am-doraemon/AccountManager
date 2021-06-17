@@ -3,6 +3,7 @@ object Authenticate: TAuthenticate
   Top = 0
   Width = 320
   Height = 240
+  Align = alClient
   TabOrder = 0
   object Container: TPanel
     Left = 0

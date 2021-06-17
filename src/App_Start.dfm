@@ -15,7 +15,7 @@ object Start: TStart
   OnClose = OnCloseApp
   PixelsPerInch = 96
   TextHeight = 13
-  inline DoAuthenticate: TAuthenticate
+  inline DoSetupPassword: TSetupPassword
     Left = 0
     Top = 0
     Width = 324
