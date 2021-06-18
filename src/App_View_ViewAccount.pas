@@ -48,6 +48,7 @@ type
     function GetItemIndex: Integer;
   public
     { Public êÈåæ }
+    constructor Create(Owner: TComponent); override;
     procedure Clear;
     procedure Reset(Items: TStrings);
     procedure SetContents(Id: Integer; UserName, Address, Remarks: string);
@@ -59,6 +60,12 @@ type
 implementation
 
 {$R *.dfm}
+
+constructor TViewAccount.Create(Owner: TComponent);
+begin
+  inherited;
+  FId := -1;
+end;
 
 function TViewAccount.GetItemIndex;
 begin
@@ -79,6 +86,8 @@ end;
 
 procedure TViewAccount.Clear;
 begin
+  FId := -1;
+
   DoChooseSite.Clear;
   DoShowAddress.Clear;
   DoShowRemarks.Clear;
