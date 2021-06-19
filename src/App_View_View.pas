@@ -1,4 +1,4 @@
-unit App_View_ViewAccount;
+unit App_View_View;
 
 interface
 

@@ -6,9 +6,9 @@ uses
   App_Data,
   App_Utilities,
   App_View_Authenticate,
-  App_View_EditAccount,
-  App_View_SetupPassword,
-  App_View_ViewAccount,
+  App_View_Edit,
+  App_View_Setup,
+  App_View_View,
 
   System.Classes,
   System.Generics.Collections,

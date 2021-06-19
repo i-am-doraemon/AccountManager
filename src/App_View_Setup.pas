@@ -1,4 +1,4 @@
-unit App_View_SetupPassword;
+unit App_View_Setup;
 
 interface
 

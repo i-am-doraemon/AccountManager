@@ -1,4 +1,4 @@
-unit App_View_EditAccount;
+unit App_View_Edit;
 
 interface
 
