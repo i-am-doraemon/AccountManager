@@ -70,7 +70,7 @@ object EditAccount: TEditAccount
     object DoInputPassword: TEdit
       Left = 77
       Top = 117
-      Width = 220
+      Width = 164
       Height = 21
       TabOrder = 3
     end
@@ -98,6 +98,15 @@ object EditAccount: TEditAccount
       Caption = #12461#12515#12531#12475#12523
       TabOrder = 6
       OnClick = OnDoCancel
+    end
+    object DoGeneratePassword: TButton
+      Left = 249
+      Top = 117
+      Width = 48
+      Height = 22
+      Caption = #29983#25104
+      TabOrder = 7
+      OnClick = OnDoGeneratePassword
     end
   end
 end

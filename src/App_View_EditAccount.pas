@@ -4,6 +4,7 @@ interface
 
 uses
   App_Data,
+  App_Utilities,
 
   System.Classes,
   System.SysUtils,
@@ -40,18 +41,22 @@ type
 
     DoCancel: TButton;
     DoOK: TButton;
+    DoGeneratePassword: TButton;
 
     procedure OnDoCancel(Sender: TObject);
     procedure OnDoOK(Sender: TObject);
+    procedure OnDoGeneratePassword(Sender: TObject);
   private
     { Private êÈåæ }
     FId: Integer;
+    FPasswordGenerator: TPasswordGenerator;
     FOnCancel: TNotifyEvent;
     FOnOK: TAccountNotifyEvent;
     procedure SetPassword(Password: string);
   public
     { Public êÈåæ }
     constructor Create(Owner: TComponent); override;
+    destructor Destroy; override;
     procedure Clear;
     procedure Reset(Account: TAccount);
     property Password: string write SetPassword;
@@ -64,9 +69,23 @@ implementation
 {$R *.dfm}
 
 constructor TEditAccount.Create(Owner: TComponent);
+const
+  INI_FILE_EXTENSION = '.ini';
+var
+  IniFileName: string;
 begin
   inherited;
+
+  IniFileName := ChangeFileExt(Application.ExeName, INI_FILE_EXTENSION);
+  FPasswordGenerator := TPasswordGenerator.Create(IniFileName);
+
   FId := -1;
+end;
+
+destructor TEditAccount.Destroy;
+begin
+  inherited;
+  FPasswordGenerator.Free;
 end;
 
 procedure TEditAccount.SetPassword(Password: string);
@@ -101,6 +120,11 @@ begin
   Clear;
   if Assigned(FOnCancel) then
     FOnCancel(Self);
+end;
+
+procedure TEditAccount.OnDoGeneratePassword(Sender: TObject);
+begin
+  DoInputPassword.Text := FPasswordGenerator.Generate;
 end;
 
 procedure TEditAccount.OnDoOK(Sender: TObject);

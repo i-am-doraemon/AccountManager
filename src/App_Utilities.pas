@@ -3,6 +3,7 @@ unit App_Utilities;
 interface
 
 uses
+  System.IniFiles,
   System.SysUtils,
 
   Vcl.ExtCtrls,
@@ -38,6 +39,27 @@ type
     constructor Create(DelayTask: TDelayTask);
     destructor Destroy; override;
     procedure Schedule(MilliSecond: Cardinal);
+  end;
+
+  TAvailableCharacterType = (acLowerCase, acUpperCase, acDigits);
+  TCharSet = set of TAvailableCharacterType;
+  EInvalidCharSetException = class(Exception);
+
+  TPasswordGenerator = class(TObject)
+  private
+    FLength: Integer;
+    FCharSet: TCharSet;
+    function GetRandomizedCharacter(CharSet: TCharSet): Char;
+    function IsUseLowerCase: Boolean;
+    function IsUseUpperCase: Boolean;
+    function IsUseDigits: Boolean;
+  public
+    constructor Create(IniFileName: string);
+    function Generate: string;
+    property Length: Integer read FLength;
+    property UseLowerCase: Boolean read IsUseLowerCase;
+    property UseUpperCase: Boolean read IsUseUpperCase;
+    property UseDigits: Boolean read IsUseDigits;
   end;
 
 implementation
@@ -103,5 +125,132 @@ begin
   FTimer.Interval := MilliSecond;
   FTimer.Enabled := True;
 end;
+
+constructor TPasswordGenerator.Create(IniFileName: string);
+const
+  SECTION_NAME = 'PASSWORD';
+var
+  IniFile: TIniFile;
+  Value: Integer;
+begin
+  inherited Create;
+
+  IniFile := TIniFile.Create(IniFileName);
+  try
+    FLength := IniFile.ReadInteger(SECTION_NAME, 'LENGTH', 12);
+
+    Value := IniFile.ReadInteger(SECTION_NAME, 'USE_LOWER_CASE', 1);
+    if Value <> 0 then
+      Include(FCharSet, acLowerCase);
+
+    Value := IniFile.ReadInteger(SECTION_NAME, 'USE_UPPER_CASE', 1);
+    if Value <> 0 then
+      Include(FCharSet, acUpperCase);
+
+    Value := IniFile.ReadInteger(SECTION_NAME, 'USE_DIGITS', 1);
+    if Value <> 0 then
+      Include(FCharSet, acDigits);
+  finally
+    IniFile.Free;
+  end;
+end;
+
+function TPasswordGenerator.IsUseLowerCase: Boolean;
+begin
+  Result := acLowerCase in FCharSet;
+end;
+
+function TPasswordGenerator.IsUseUpperCase: Boolean;
+begin
+  Result := acUpperCase in FCharSet;
+end;
+
+function TPasswordGenerator.IsUseDigits: Boolean;
+begin
+  Result := acDigits in FCharSet;
+end;
+
+function TPasswordGenerator.GetRandomizedCharacter(CharSet: TCharSet): Char;
+const
+  ZERO = $30;
+  LOWER_A = $61;
+  UPPER_A = $41;
+var
+  Value: Integer;
+begin
+  if CharSet = [] then
+    raise EInvalidCharSetException.Create('Neither character type is specified.')
+  else if CharSet = [acDigits] then
+  begin
+    Value := Random(10);
+    Result := Chr(ZERO + Value);
+  end
+  else if CharSet = [acLowerCase] then
+  begin
+    Value := Random(26);
+    Result := Chr(LOWER_A + Value);
+  end
+  else if CharSet = [acUpperCase] then
+  begin
+    Value := Random(26);
+    Result := Chr(UPPER_A + Value);
+  end
+  else if CharSet = [acLowerCase, acDigits] then
+  begin
+    Value := Random(36);
+    if Value < 10 then
+      Result := Chr(ZERO + Value)
+    else
+      Result := Chr(LOWER_A + Value - 10);
+  end
+  else if CharSet = [acUpperCase, acDigits] then
+  begin
+    Value := Random(36);
+    if Value < 10 then
+      Result := Chr(ZERO + Value)
+    else
+      Result := Chr(UPPER_A + Value - 10);
+  end
+  else if CharSet = [acLowerCase, acUpperCase] then
+  begin
+    Value := Random(52);
+    if Value < 26 then
+      Result := Chr(LOWER_A + Value)
+    else
+      Result := Chr(UPPER_A + Value - 26);
+  end
+  else
+  begin
+    Value := Random(62);
+    if Value < 10 then
+      Result := Chr(ZERO + Value)
+    else if Value < 36 then
+      Result := Chr(LOWER_A + Value - 10)
+    else
+      Result := Chr(UPPER_A + Value - 36);
+  end;
+end;
+
+function TPasswordGenerator.Generate: string;
+var
+  I: Integer;
+  Apendable: TStringBuilder;
+begin
+  if FCharSet = [] then
+    raise EInvalidCharSetException.Create('Neither character type is specified.');
+
+  Apendable := TStringBuilder.Create;
+  try
+    for I := 0 to FLength - 1 do
+      Apendable.Append(GetRandomizedCharacter(FCharSet));
+
+    Result := Apendable.ToString;
+  finally
+    Apendable.Free;
+  end;
+end;
+
+initialization
+  Randomize;
 
 end.
