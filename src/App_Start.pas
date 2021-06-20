@@ -6,6 +6,7 @@ uses
   App_Data,
   App_Utilities,
   App_View_Authenticate,
+  App_View_Configure,
   App_View_Edit,
   App_View_Setup,
   App_View_View,
@@ -39,6 +40,7 @@ type
     DoAppendAccount: TMenuItem;
     DoUpdateAccount: TMenuItem;
     DoRemoveAccount: TMenuItem;
+    DoConfigure: TMenuItem;
 
     procedure OnDoExitApp(Sender: TObject);
     procedure OnDoShowAppVersion(Sender: TObject);
@@ -46,6 +48,7 @@ type
     procedure OnDoUpdateAccount(Sender: TObject);
     procedure OnDoRemoveAccount(Sender: TObject);
     procedure OnCloseApp(Sender: TObject; var Action: TCloseAction);
+    procedure OnDoConfigure(Sender: TObject);
   private
     { Private 宣言 }
     FModel: TModel;
@@ -124,6 +127,20 @@ begin
   end
   else
     ShowMessage('パスワードが違います。');
+end;
+
+procedure TStart.OnDoConfigure(Sender: TObject);
+var
+  Preferences: TConfigure;
+begin
+  Preferences := TConfigure.Create(Self);
+  try
+    Preferences.PasswordPreferences := FEditAccount.PasswordPreferences;
+    if Preferences.ShowModal = mrOk then
+      FEditAccount.PasswordPreferences := Preferences.PasswordPreferences;
+  finally
+    Preferences.Release;
+  end;
 end;
 
 procedure TStart.OnDoAppendAccount(Sender: TObject);

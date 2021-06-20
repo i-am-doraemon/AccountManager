@@ -12,11 +12,13 @@ uses
 
   Vcl.Controls,
   Vcl.Dialogs,
+  Vcl.ExtCtrls,
   Vcl.Forms,
   Vcl.Graphics,
+  Vcl.StdCtrls,
 
   Winapi.Messages,
-  Winapi.Windows, Vcl.ExtCtrls, Vcl.StdCtrls;
+  Winapi.Windows;
 
 type
   TAccountNotifyEvent = procedure(Sender: TObject; Account: TAccount) of object;
@@ -52,6 +54,8 @@ type
     FPasswordGenerator: TPasswordGenerator;
     FOnCancel: TNotifyEvent;
     FOnOK: TAccountNotifyEvent;
+    function GetPasswordPreferences: TPasswordPreferences;
+    procedure SetPasswordPreferences(Preferences: TPasswordPreferences);
     procedure SetPassword(Password: string);
   public
     { Public êÈåæ }
@@ -60,6 +64,7 @@ type
     procedure Clear;
     procedure Reset(Account: TAccount);
     property Password: string write SetPassword;
+    property PasswordPreferences: TPasswordPreferences read GetPasswordPreferences write SetPasswordPreferences;
     property OnCancel: TNotifyEvent read FOnCancel write FOnCancel;
     property OnOK: TAccountNotifyEvent read FOnOK write FOnOK;
   end;
@@ -88,9 +93,25 @@ begin
   FPasswordGenerator.Free;
 end;
 
+function TEditAccount.GetPasswordPreferences: TPasswordPreferences;
+begin
+  Result.Length := FPasswordGenerator.Length;
+  Result.UseDigits := FPasswordGenerator.UseDigits;
+  Result.UseLowerCase := FPasswordGenerator.UseLowerCase;
+  Result.UseUpperCase := FPasswordGenerator.UseUpperCase;
+end;
+
 procedure TEditAccount.SetPassword(Password: string);
 begin
   DoInputPassword.Text := Password;
+end;
+
+procedure TEditAccount.SetPasswordPreferences(Preferences: TPasswordPreferences);
+begin
+  FPasswordGenerator.Length := Preferences.Length;
+  FPasswordGenerator.UseDigits := Preferences.UseDigits;
+  FPasswordGenerator.UseLowerCase := Preferences.UseLowerCase;
+  FPasswordGenerator.UseUpperCase := Preferences.UseUpperCase;
 end;
 
 procedure TEditAccount.Clear;

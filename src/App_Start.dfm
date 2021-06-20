@@ -58,6 +58,10 @@ object Start: TStart
         Enabled = False
         OnClick = OnDoRemoveAccount
       end
+      object DoConfigure: TMenuItem
+        Caption = #35373#23450
+        OnClick = OnDoConfigure
+      end
     end
     object HelpMenu: TMenuItem
       Caption = #12504#12523#12503'(&H)'

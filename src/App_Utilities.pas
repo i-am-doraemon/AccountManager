@@ -53,13 +53,30 @@ type
     function IsUseLowerCase: Boolean;
     function IsUseUpperCase: Boolean;
     function IsUseDigits: Boolean;
+    procedure EnableUseDigits(Enable: Boolean);
+    procedure EnableUseLowerCase(Enable: Boolean);
+    procedure EnableUseUpperCase(Enable: Boolean);
   public
     constructor Create(IniFileName: string);
     function Generate: string;
-    property Length: Integer read FLength;
-    property UseLowerCase: Boolean read IsUseLowerCase;
-    property UseUpperCase: Boolean read IsUseUpperCase;
-    property UseDigits: Boolean read IsUseDigits;
+    property Length: Integer read FLength write FLength;
+    property UseLowerCase: Boolean read IsUseLowerCase write EnableUseLowerCase;
+    property UseUpperCase: Boolean read IsUseUpperCase write EnableUseUpperCase;
+    property UseDigits: Boolean read IsUseDigits write EnableUseDigits;
+  end;
+
+  TPasswordPreferences = record
+  private
+    FLength: Integer;
+    FUseDigits: Boolean;
+    FUseLowerCase: Boolean;
+    FUseUpperCase: Boolean;
+  public
+    constructor Create(Length: Integer; UseDigits, UseLowerCase, UseUpperCase: Boolean);
+    property Length: Integer read FLength write FLength;
+    property UseDigits: Boolean read FUseDigits write FUseDigits;
+    property UseLowerCase: Boolean read FUseLowerCase write FUseLowerCase;
+    property UseUpperCase: Boolean read FUseUpperCase write FUseUpperCase;
   end;
 
 implementation
@@ -248,6 +265,38 @@ begin
   finally
     Apendable.Free;
   end;
+end;
+
+procedure TPasswordGenerator.EnableUseDigits(Enable: Boolean);
+begin
+  if Enable then
+    Include(FCharSet, acDigits)
+  else
+    Exclude(FCharSet, acDigits);
+end;
+
+procedure TPasswordGenerator.EnableUseLowerCase(Enable: Boolean);
+begin
+  if Enable then
+    Include(FCharSet, acLowerCase)
+  else
+    Exclude(FCharSet, acLowerCase);
+end;
+
+procedure TPasswordGenerator.EnableUseUpperCase(Enable: Boolean);
+begin
+  if Enable then
+    Include(FCharSet, acUpperCase)
+  else
+    Exclude(FCharSet, acUpperCase);
+end;
+
+constructor TPasswordPreferences.Create(Length: Integer; UseDigits: Boolean; UseLowerCase: Boolean; UseUpperCase: Boolean);
+begin
+  FLength := Length;
+  FUseDigits := UseDigits;
+  FUseLowerCase := UseLowerCase;
+  FUseUpperCase := UseUpperCase;
 end;
 
 initialization
