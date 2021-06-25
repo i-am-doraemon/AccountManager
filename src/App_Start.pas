@@ -8,6 +8,7 @@ uses
   App_View_Authenticate,
   App_View_Configure,
   App_View_Edit,
+  App_View_ReSetup,
   App_View_Setup,
   App_View_View,
 
@@ -34,6 +35,7 @@ type
     FileMenu: TMenuItem;
     EditMenu: TMenuItem;
     HelpMenu: TMenuItem;
+
     DoExitApp: TMenuItem;
     DoShowAppVersion: TMenuItem;
     DoSetupPassword: TSetupPassword;
@@ -41,9 +43,11 @@ type
     DoUpdateAccount: TMenuItem;
     DoRemoveAccount: TMenuItem;
     DoConfigure: TMenuItem;
+    DoChangeMasterPassword: TMenuItem;
 
     procedure OnDoExitApp(Sender: TObject);
     procedure OnDoShowAppVersion(Sender: TObject);
+    procedure OnDoChangeMasterPassword(Sender: TObject);
     procedure OnDoAppendAccount(Sender: TObject);
     procedure OnDoUpdateAccount(Sender: TObject);
     procedure OnDoRemoveAccount(Sender: TObject);
@@ -52,14 +56,18 @@ type
   private
     { Private 宣言 }
     FModel: TModel;
+    FDoReSetup: TReSetupPassword;
     FDoAuthenticate: TAuthenticate;
     FEditAccount: TEditAccount; // アカウントの編集ビュー
     FViewAccount: TViewAccount; // アカウントの閲覧ビュー
 
+    procedure ToForefront(Frame: TFrame);
     procedure OnChangeModel(Sender: TObject);
     procedure OnDoSetupPassword(Sender: TObject; Password: string);
+    procedure OnDoReSetupPassword(Sender: TObject; Password, NewPassword: string);
     procedure OnDoAuthenticate(Sender: TObject; Password: string);
     procedure OnCancelEditing(Sender: TObject);
+    procedure OnCancelReSettingUp(Sender: TObject);
     procedure OnDidEdit(Sender: TObject; Account: TAccount);
     procedure OnSelectAccount(Sender: TObject; Index: Integer);
     procedure OnCopyPasswordToClipBoard(Sender: TObject; Id: Integer);
@@ -84,6 +92,10 @@ begin
 
   DoSetupPassword.OnSetupPassword := OnDoSetupPassword;
 
+  FDoReSetup := TReSetupPassword.Create(Self);
+  FDoReSetup.OnOK := OnDoReSetupPassword;
+  FDoReSetup.OnCancel := OnCancelReSettingUp;
+
   FDoAuthenticate := TAuthenticate.Create(Self);
   FDoAuthenticate.OnAuthenticate := OnDoAuthenticate;
 
@@ -100,7 +112,33 @@ begin
   FViewAccount.OnCopyToClipBoard := OnCopyPasswordToClipBoard;
 
   if TFile.Exists(FModel.DBFileName) then
-    FDoAuthenticate.Parent := Self;
+    ToForefront(FDoAuthenticate);
+end;
+
+procedure TStart.ToForefront(Frame: TFrame);
+var
+  I: Integer;
+begin
+  for I := 0 to ControlCount - 1 do
+    if Controls[I] is TFrame then
+      Controls[I].Parent := nil;
+
+  Frame.Parent := Self;
+
+  if Frame = FViewAccount then
+  begin
+    DoAppendAccount.Enabled := True;
+    DoUpdateAccount.Enabled := True;
+    DoRemoveAccount.Enabled := True;
+    DoChangeMasterPassword.Enabled := True;
+  end
+  else
+  begin
+    DoAppendAccount.Enabled := False;
+    DoUpdateAccount.Enabled := False;
+    DoRemoveAccount.Enabled := False;
+    DoChangeMasterPassword.Enabled := False;
+  end;
 end;
 
 procedure TStart.OnDoExitApp(Sender: TObject);
@@ -110,23 +148,37 @@ end;
 
 procedure TStart.OnDoSetupPassword(Sender: TObject; Password: string);
 begin
-  FModel.Open(Password);
+  FModel.Open(TDBSecurityParam.GetCreateParam(Password));
   FModel.Close;
 
-  FDoAuthenticate.Parent := Self;
+  ToForefront(FDoAuthenticate);
+end;
+
+procedure TStart.OnDoReSetupPassword(Sender: TObject; Password: string; NewPassword: string);
+begin
+  if FModel.Open(TDBSecurityParam.GetChangeParam(Password, NewPassword)) then
+  begin
+    ShowMessage('マスタパスワードの変更に成功しました。');
+    FModel.Close;
+    ToForefront(FDoAuthenticate);
+  end
+  else
+    ShowMessage('マスタパスワードの変更に失敗しました。');
 end;
 
 procedure TStart.OnDoAuthenticate(Sender: TObject; Password: string);
 begin
-  if FModel.Open(Password) then
+  if FModel.Open(TDBSecurityParam.GetOpenParam(Password)) then
   begin
-    FViewAccount.Parent := Self;
-    DoAppendAccount.Enabled := True;
-    DoUpdateAccount.Enabled := True;
-    DoRemoveAccount.Enabled := True;
+    ToForefront(FViewAccount);
   end
   else
     ShowMessage('パスワードが違います。');
+end;
+
+procedure TStart.OnDoChangeMasterPassword(Sender: TObject);
+begin
+  ToForefront(FDoReSetup);
 end;
 
 procedure TStart.OnDoConfigure(Sender: TObject);
@@ -145,7 +197,7 @@ end;
 
 procedure TStart.OnDoAppendAccount(Sender: TObject);
 begin
-  FEditAccount.Parent := Self;
+  ToForefront(FEditAccount);
 end;
 
 procedure TStart.OnDoUpdateAccount(Sender: TObject);
@@ -161,11 +213,10 @@ begin
   begin
     Account := FModel.Account[Index];
 
-    FViewAccount.Parent := nil;
-    FEditAccount.Parent := Self;
-
     FEditAccount.Reset(Account);
     FEditAccount.Password := FModel.GetPassword(Account.Id);
+
+    ToForefront(FEditAccount);
   end;
 end;
 
@@ -219,8 +270,12 @@ end;
 
 procedure TStart.OnCancelEditing(Sender: TObject);
 begin
-  FEditAccount.Parent := nil;
-  FViewAccount.Parent := Self;
+  ToForefront(FViewAccount);
+end;
+
+procedure TStart.OnCancelReSettingUp(Sender: TObject);
+begin
+  ToForefront(FViewAccount);
 end;
 
 procedure TStart.OnDidEdit(Sender: TObject; Account: TAccount);
@@ -232,8 +287,7 @@ begin
   else
     FModel.Update(Account);
 
-  FEditAccount.Parent := nil;
-  FViewAccount.Parent := Self;
+  ToForefront(FViewAccount);
 end;
 
 procedure TStart.OnSelectAccount(Sender: TObject; Index: Integer);

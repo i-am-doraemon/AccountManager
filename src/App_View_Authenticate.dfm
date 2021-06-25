@@ -1,15 +1,15 @@
 object Authenticate: TAuthenticate
   Left = 0
   Top = 0
-  Width = 320
-  Height = 240
+  Width = 451
+  Height = 305
   Align = alClient
   TabOrder = 0
   object Container: TPanel
     Left = 0
     Top = 0
-    Width = 320
-    Height = 240
+    Width = 451
+    Height = 305
     Align = alClient
     TabOrder = 0
     object DoInputPassword: TEdit

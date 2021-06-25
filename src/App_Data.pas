@@ -53,6 +53,20 @@ type
     property Remarks: string read FRemarks write FRemarks;
   end;
 
+  TDBSecurityOperation = (dsoOpen, dsoChange, dsoCreate);
+
+  TDBSecurityParam = record
+  private
+    FOperation: TDBSecurityOperation;
+    FPassword: string;
+    FNewPassword: string;
+  public
+    procedure SetConnectionParam(Params: TFDConnectionDefParams);
+    class function GetCreateParam(Password: string): TDBSecurityParam; static;
+    class function GetChangeParam(Password, NewPassword: string): TDBSecurityParam; static;
+    class function GetOpenParam(Password: string): TDBSecurityParam; static;
+  end;
+
   TModel = class(TObject)
   private
     FOnChange: TNotifyEvent;
@@ -67,7 +81,7 @@ type
     destructor Destroy; override;
     function GetEnumerator: TEnumerator<TAccount>;
     function GetPassword(Id: Integer): string;
-    function Open(Password: string): Boolean;
+    function Open(Param: TDBSecurityParam): Boolean;
     function Append(Account: TAccount): Boolean;
     function Update(Account: TAccount): Boolean;
     function Remove(Account: TAccount): Boolean;
@@ -90,6 +104,41 @@ begin
 
   FRemarks := Remarks;
   FAddress := Address;
+end;
+
+procedure TDBSecurityParam.SetConnectionParam(Params: TFDConnectionDefParams);
+begin
+  if FOperation = dsoCreate then
+  begin
+    Params.Add('Password=');
+    Params.Add('NewPassword=' + FNewPassword);
+  end
+  else if FOperation = dsoChange then
+  begin
+    Params.Add('Password=' + FPassword);
+    Params.Add('NewPassword=' + FNewPassword);
+  end
+  else
+    Params.Add('Password=' + FPassword);
+end;
+
+class function TDBSecurityParam.GetCreateParam(Password: string): TDBSecurityParam;
+begin
+  Result.FOperation := dsoCreate;
+  Result.FNewPassword := Password;
+end;
+
+class function TDBSecurityParam.GetChangeParam(Password, NewPassword: string): TDBSecurityParam;
+begin
+  Result.FOperation := dsoChange;
+  Result.FPassword := Password;
+  Result.FNewPassword := NewPassword;
+end;
+
+class function TDBSecurityParam.GetOpenParam(Password: string): TDBSecurityParam;
+begin
+  Result.FOperation := dsoOpen;
+  Result.FPassword := Password;
 end;
 
 constructor TModel.Create;
@@ -159,15 +208,17 @@ begin
       Result := I;
 end;
 
-function TModel.Open(Password: string): Boolean;
+function TModel.Open(Param: TDBSecurityParam): Boolean;
 var
-  DBType, DBName, EncryptionParamName: string;
+  DBType, DBName: string;
   Query: TFDQuery;
   New: TAccount;
 const
   STATEMENT = 'CREATE TABLE IF NOT EXISTS Accounts' +
               '(Id INTEGER PRIMARY KEY, SiteName TEXT, Address TEXT, UserName TEXT, Password TEXT, Remarks TEXT)';
 begin
+  Close;
+
   // データベースへ接続
 
   DBType := 'SQLite';
@@ -176,14 +227,10 @@ begin
   // データベースを新規作成する場合と、
   // 既存のデータベースを開く場合で暗号化パラメータの名称が異なることに注意する。
 
-  if TFile.Exists(DBName) then
-    EncryptionParamName := 'Password'
-  else
-    EncryptionParamName := 'NewPassword';
-
+  FDBConnection.Params.Clear;
   FDBConnection.Params.Add('DriverID=' + DBType);
   FDBConnection.Params.Add('Database=' + DBName);
-  FDBConnection.Params.Add(EncryptionParamName + '=' + Password);
+  Param.SetConnectionParam(FDBConnection.Params);
 
   try
     FDBConnection.Open;

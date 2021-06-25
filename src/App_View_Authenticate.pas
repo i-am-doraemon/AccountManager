@@ -43,6 +43,8 @@ procedure TAuthenticate.OnDoAuthenticate(Sender: TObject);
 begin
   if Assigned(FOnAuthenticate) then
     FOnAuthenticate(Self, DoInputPassword.Text);
+
+  DoInputPassword.Clear;
 end;
 
 end.
