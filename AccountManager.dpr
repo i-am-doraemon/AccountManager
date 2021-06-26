@@ -9,7 +9,8 @@ uses
   App_Data in 'src\App_Data.pas',
   App_Utilities in 'src\App_Utilities.pas',
   App_View_Setup in 'src\App_View_Setup.pas' {SetupPassword: TFrame},
-  App_View_Configure in 'src\App_View_Configure.pas' {Configure};
+  App_View_Configure in 'src\App_View_Configure.pas' {Configure},
+  App_View_ReSetup in 'src\App_View_ReSetup.pas' {ReSetupPassword: TFrame};
 
 {$R *.res}
 
