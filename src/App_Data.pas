@@ -43,6 +43,7 @@ type
     FPassword: string;
     FAddress: string;
     FRemarks: string;
+    FLastWriteTime: TDateTime;
   public
     constructor Create(Id: Integer; SiteName, UserName, Password, Address, Remarks: string);
     property Id: Integer read FId;
@@ -51,6 +52,7 @@ type
     property Password: string read FPassword write FPassword;
     property Address: string read FAddress write FAddress;
     property Remarks: string read FRemarks write FRemarks;
+    property LastWriteTime: TDateTime read FLastWriteTime write FLastWriteTime;
   end;
 
   TModel = class(TObject)
@@ -90,6 +92,8 @@ begin
 
   FRemarks := Remarks;
   FAddress := Address;
+
+  FLastWriteTime := Now;
 end;
 
 constructor TModel.Create;
@@ -166,7 +170,7 @@ var
   New: TAccount;
 const
   STATEMENT = 'CREATE TABLE IF NOT EXISTS Accounts' +
-              '(Id INTEGER PRIMARY KEY, SiteName TEXT, Address TEXT, UserName TEXT, Password TEXT, Remarks TEXT)';
+              '(Id INTEGER PRIMARY KEY, SiteName TEXT, Address TEXT, UserName TEXT, Password TEXT, Remarks TEXT, LastWriteTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, CreationTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP)';
 begin
   // データベースへ接続
 
@@ -212,7 +216,7 @@ begin
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := FDBConnection;
-    Query.SQL.Text := 'SELECT Id, SiteName, Address, UserName, Remarks FROM Accounts';
+    Query.SQL.Text := 'SELECT Id, SiteName, Address, UserName, Remarks, LastWriteTime FROM Accounts';
     Query.Open; // SQLを実行
 
     while not Query.Eof do
@@ -222,6 +226,7 @@ begin
       New.FUserName := Query.FieldByName('UserName').AsString;
       New.FAddress := Query.FieldByName('Address').AsString;
       New.FRemarks := Query.FieldByName('Remarks').AsString;
+      New.FLastWriteTime := Query.FieldByName('LastWriteTime').AsDateTime;
 
       FList.Add(New);
 
@@ -239,8 +244,8 @@ end;
 
 function TModel.Append(Account: TAccount): Boolean;
 const
-  STATEMENT = 'INSERT INTO Accounts(SiteName, UserName, Password, Address, Remarks)' +
-              'VALUES(:SiteName, :UserName, :Password, :Address, :Remarks)';
+  STATEMENT = 'INSERT INTO Accounts(SiteName, UserName, Password, Address, Remarks, LastWriteTime, CreationTime)' +
+              'VALUES(:SiteName, :UserName, :Password, :Address, :Remarks, :LastWriteTime, :CreationTime)';
 var
   Query: TFDQuery;
   NumberOfChangedRow: LongInt; // 変更されたレコード数
@@ -255,6 +260,8 @@ begin
     Query.ParamByName('Password').AsString := Account.Password;
     Query.ParamByName('Address').AsString := Account.Address;
     Query.ParamByName('Remarks').AsString := Account.Remarks;
+    Query.ParamByName('LastWriteTime').AsDateTime := Account.LastWriteTime;
+    Query.ParamByName('CreationTime').AsDateTime := Account.LastWriteTime;
 
     NumberOfChangedRow := Query.ExecSQL(False);
   finally
@@ -280,7 +287,7 @@ const
   STATEMENT = 'UPDATE Accounts SET SiteName = :SiteName,' +
                                  ' UserName = :UserName,' +
                                  ' Password = :Password,' +
-                                 ' Address = :Address, Remarks = :Remarks WHERE Id = :Id';
+                                 ' Address = :Address, Remarks = :Remarks, LastWriteTime = :LastWriteTime WHERE Id = :Id';
 var
   Index: Integer;
   Query: TFDQuery;
@@ -297,6 +304,7 @@ begin
     Query.Params.ParamByName('Password').AsString := Account.Password;
     Query.Params.ParamByName('Address').AsString := Account.Address;
     Query.Params.ParamByName('Remarks').AsString := Account.Remarks;
+    Query.Params.ParamByName('LastWriteTime').AsDateTime := Account.LastWriteTime;
 
     NumberOfChangedRow := Query.ExecSQL(False);
   finally
