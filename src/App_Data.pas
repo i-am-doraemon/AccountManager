@@ -228,9 +228,6 @@ begin
   DBType := 'SQLite';
   DBName := DBFileName;
 
-  // データベースを新規作成する場合と、
-  // 既存のデータベースを開く場合で暗号化パラメータの名称が異なることに注意する。
-
   FDBConnection.Params.Clear;
   FDBConnection.Params.Add('DriverID=' + DBType);
   FDBConnection.Params.Add('Database=' + DBName);
@@ -239,14 +236,6 @@ begin
   try
     FDBConnection.Open;
   except
-    // パスワードの誤りによるデータベースの接続例外が一度でも起こると、
-    // 以後、正しいパスワードであっても接続例外が起こる。
-    // 接続例外の発生時にCloseメソッドをコールしても同じなため、
-    // オブジェクトを再作成することとする。
-
-    FDBConnection.Free;
-    FDBConnection := TFDConnection.Create(nil);
-
     Exit(False);
   end;
 

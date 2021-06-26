@@ -37,7 +37,7 @@ object Start: TStart
     object FileMenu: TMenuItem
       Caption = #12501#12449#12452#12523'(&F)'
       object DoChangeMasterPassword: TMenuItem
-        Caption = #12510#12473#12479#12540#12497#12473#12527#12540#12489#12434#22793#26356
+        Caption = #12510#12473#12479#12540#12497#12473#12527#12540#12489#12434#22793#26356'(&C)'
         Enabled = False
         OnClick = OnDoChangeMasterPassword
       end
@@ -64,7 +64,7 @@ object Start: TStart
         OnClick = OnDoRemoveAccount
       end
       object DoConfigure: TMenuItem
-        Caption = #35373#23450
+        Caption = #35373#23450'(&P)'
         OnClick = OnDoConfigure
       end
     end
