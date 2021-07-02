@@ -44,6 +44,9 @@ type
     DoRemoveAccount: TMenuItem;
     DoConfigure: TMenuItem;
     DoChangeMasterPassword: TMenuItem;
+    DoExportAsCsv: TMenuItem;
+
+    SaveDialog: TSaveDialog;
 
     procedure OnDoExitApp(Sender: TObject);
     procedure OnDoShowAppVersion(Sender: TObject);
@@ -53,6 +56,7 @@ type
     procedure OnDoRemoveAccount(Sender: TObject);
     procedure OnCloseApp(Sender: TObject; var Action: TCloseAction);
     procedure OnDoConfigure(Sender: TObject);
+    procedure OnDoExportAsCsv(Sender: TObject);
   private
     { Private 宣言 }
     FModel: TModel;
@@ -111,6 +115,8 @@ begin
   FViewAccount.OnSelect := OnSelectAccount;
   FViewAccount.OnCopyToClipBoard := OnCopyPasswordToClipBoard;
 
+  SaveDialog.InitialDir := ExtractFileDir(Application.ExeName);
+
   if TFile.Exists(FModel.DBFileName) then
     ToForefront(FDoAuthenticate);
 end;
@@ -131,6 +137,7 @@ begin
     DoUpdateAccount.Enabled := True;
     DoRemoveAccount.Enabled := True;
     DoChangeMasterPassword.Enabled := True;
+    DoExportAsCsv.Enabled := True;
   end
   else
   begin
@@ -138,12 +145,24 @@ begin
     DoUpdateAccount.Enabled := False;
     DoRemoveAccount.Enabled := False;
     DoChangeMasterPassword.Enabled := False;
+    DoExportAsCsv.Enabled := False;
   end;
 end;
 
 procedure TStart.OnDoExitApp(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TStart.OnDoExportAsCsv(Sender: TObject);
+begin
+  if SaveDialog.Execute then
+    try
+      FModel.ExportAsCsv(SaveDialog.FileName);
+    except
+      on E: Exception do
+        ShowMessage('ファイルを出力できません。');
+    end;
 end;
 
 procedure TStart.OnDoSetupPassword(Sender: TObject; Password: string);

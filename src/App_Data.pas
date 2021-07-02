@@ -46,6 +46,7 @@ type
     FLastWriteTime: TDateTime;
   public
     constructor Create(Id: Integer; SiteName, UserName, Password, Address, Remarks: string);
+    function ToString: string;
     property Id: Integer read FId;
     property SiteName: string read FSiteName write FSiteName;
     property UserName: string read FUserName write FUserName;
@@ -89,6 +90,7 @@ type
     function Remove(Account: TAccount): Boolean;
     procedure Close;
     procedure CopyPasswordToClipBoard(Id: Integer);
+    procedure ExportAsCsv(FileName: string);
     property Account[Index: Integer]: TAccount read GetAccount;
     property DBFileName: string read GetDBFileName;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -108,6 +110,18 @@ begin
   FAddress := Address;
 
   FLastWriteTime := Now;
+end;
+
+function TAccount.ToString: string;
+const
+  DATE_TIME_FORMAT = 'yyyy/mm/dd hh:nn:ss';
+var
+  FormattedRemarks, FormattedDateTime: string;
+begin
+  FormattedRemarks := TStringUtils.RemoveNewLineCode(FRemarks);
+  FormattedDateTime := FormatDateTime(DATE_TIME_FORMAT, FLastWriteTime);
+
+  Result := Format('%d,%s,%s,%s,%s,%s', [FId, FSiteName, FUserName, FAddress, FormattedRemarks, FormattedDateTime]);
 end;
 
 procedure TDBSecurityParam.SetConnectionParam(Params: TFDConnectionDefParams);
@@ -399,6 +413,20 @@ begin
   Clipboard.AsText := GetPassword(Id);
   if Clipboard.AsText <> '' then
     FDelayCall.Schedule(6000); // ƒ~ƒŠ•b
+end;
+
+procedure TModel.ExportAsCsv(FileName: string);
+var
+  Writer: TTextWriter;
+  Account: TAccount;
+begin
+  Writer := TStreamWriter.Create(FileName);
+  try
+    for Account in FList do
+      Writer.WriteLine(Account.ToString);
+  finally
+    Writer.Free;
+  end;
 end;
 
 end.

@@ -79,6 +79,11 @@ type
     property UseUpperCase: Boolean read FUseUpperCase write FUseUpperCase;
   end;
 
+  TStringUtils = record
+  public
+    class function RemoveNewLineCode(Paragraph: string): string; static;
+  end;
+
 implementation
 
 constructor TFileProperties.Create(FileName: string);
@@ -297,6 +302,27 @@ begin
   FUseDigits := UseDigits;
   FUseLowerCase := UseLowerCase;
   FUseUpperCase := UseUpperCase;
+end;
+
+class function TStringUtils.RemoveNewLineCode(Paragraph: string): string;
+const
+  LF = #$0A; // \n
+  CR = #$0D; // \r
+var
+  Modifiable: TStringBuilder;
+  Value: Char;
+begin
+  Modifiable := TStringBuilder.Create;
+  try
+    for Value in Paragraph do
+      if (Value <> LF) and
+         (Value <> CR) then
+        Modifiable.Append(Value);
+
+    Result := Modifiable.ToString;
+  finally
+    Modifiable.Free;
+  end;
 end;
 
 initialization

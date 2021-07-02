@@ -41,6 +41,11 @@ object Start: TStart
         Enabled = False
         OnClick = OnDoChangeMasterPassword
       end
+      object DoExportAsCsv: TMenuItem
+        Caption = 'CSV'#12391#20986#21147'(&E)'
+        Enabled = False
+        OnClick = OnDoExportAsCsv
+      end
       object DoExitApp: TMenuItem
         Caption = #32066#20102'(&X)'
         OnClick = OnDoExitApp
@@ -75,5 +80,12 @@ object Start: TStart
         OnClick = OnDoShowAppVersion
       end
     end
+  end
+  object SaveDialog: TSaveDialog
+    DefaultExt = 'csv'
+    FileName = 'list.csv'
+    Filter = 'CSV'#12501#12449#12452#12523'|*.csv'
+    Left = 200
+    Top = 224
   end
 end
