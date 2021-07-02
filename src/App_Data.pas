@@ -45,6 +45,7 @@ type
     FRemarks: string;
     FLastWriteTime: TDateTime;
   public
+    class function GetCsvHeader: string; static;
     constructor Create(Id: Integer; SiteName, UserName, Password, Address, Remarks: string);
     function ToString: string;
     property Id: Integer read FId;
@@ -97,6 +98,13 @@ type
   end;
 
 implementation
+
+class function TAccount.GetCsvHeader: string;
+const
+  HEADER = 'ID,サイト名,ユーザ名,アドレス,備考,更新日時';
+begin
+  Result := HEADER;
+end;
 
 constructor TAccount.Create(Id: Integer; SiteName, UserName, Password, Address, Remarks: string);
 begin
@@ -422,6 +430,7 @@ var
 begin
   Writer := TStreamWriter.Create(FileName);
   try
+    Writer.WriteLine(TAccount.GetCsvHeader);
     for Account in FList do
       Writer.WriteLine(Account.ToString);
   finally

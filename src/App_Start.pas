@@ -155,8 +155,27 @@ begin
 end;
 
 procedure TStart.OnDoExportAsCsv(Sender: TObject);
+var
+  IsExport: Boolean;
 begin
   if SaveDialog.Execute then
+    if TFile.Exists(SaveDialog.FileName) then
+      // 同じ名前のファイルが存在する場合
+      if MessageDlg('ファイルを上書きしますか？',
+            mtConfirmation, [mbYes, mbNo], 0, mbNo) = mrYes then
+        // ファイルを上書きする場合
+        IsExport := True
+      else
+        // ファイルを上書きしない場合
+        IsExport := False
+    else
+      // 同じ名前のファイルが存在しない場合
+      IsExport := True
+  else
+    // 保存をキャンセルした場合
+    IsExport := False;
+
+  if IsExport then
     try
       FModel.ExportAsCsv(SaveDialog.FileName);
     except
