@@ -79,7 +79,7 @@ object EditAccount: TEditAccount
       Top = 149
       Width = 220
       Height = 76
-      TabOrder = 4
+      TabOrder = 5
     end
     object DoOK: TButton
       Left = 222
@@ -87,7 +87,7 @@ object EditAccount: TEditAccount
       Width = 75
       Height = 25
       Caption = 'OK'
-      TabOrder = 5
+      TabOrder = 6
       OnClick = OnDoOK
     end
     object DoCancel: TButton
@@ -96,7 +96,7 @@ object EditAccount: TEditAccount
       Width = 75
       Height = 25
       Caption = #12461#12515#12531#12475#12523
-      TabOrder = 6
+      TabOrder = 7
       OnClick = OnDoCancel
     end
     object DoGeneratePassword: TButton
@@ -105,7 +105,7 @@ object EditAccount: TEditAccount
       Width = 48
       Height = 22
       Caption = #29983#25104
-      TabOrder = 7
+      TabOrder = 4
       OnClick = OnDoGeneratePassword
     end
   end

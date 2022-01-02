@@ -68,7 +68,7 @@ object ViewAccount: TViewAccount
       Width = 220
       Height = 76
       ReadOnly = True
-      TabOrder = 2
+      TabOrder = 3
     end
     object DoCopyToClipBoard: TButton
       Left = 77
@@ -76,7 +76,7 @@ object ViewAccount: TViewAccount
       Width = 220
       Height = 25
       Caption = #12463#12522#12483#12503#12508#12540#12489#12395#12467#12500#12540
-      TabOrder = 3
+      TabOrder = 2
       OnClick = OnDoCopyToClipBoard
     end
     object DoChooseSite: TComboBox

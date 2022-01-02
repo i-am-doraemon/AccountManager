@@ -274,7 +274,7 @@ begin
   Query := TFDQuery.Create(nil);
   try
     Query.Connection := FDBConnection;
-    Query.SQL.Text := 'SELECT Id, SiteName, Address, UserName, Remarks, LastWriteTime FROM Accounts';
+    Query.SQL.Text := 'SELECT Id, SiteName, Address, UserName, Remarks, LastWriteTime FROM Accounts ORDER BY SiteName';
     Query.Open; // SQLÇé¿çs
 
     while not Query.Eof do
