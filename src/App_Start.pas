@@ -10,7 +10,7 @@ uses
   App_View_Edit,
   App_View_ReSetup,
   App_View_Setup,
-  App_View_View,
+  App_View_Top,
 
   System.Classes,
   System.Generics.Collections,

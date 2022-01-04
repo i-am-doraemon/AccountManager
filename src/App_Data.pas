@@ -28,6 +28,7 @@ uses
 
   System.Classes,
   System.Generics.Collections,
+  System.Generics.Defaults,
   System.IOUtils,
   System.SysUtils,
 
@@ -47,6 +48,7 @@ type
   public
     class function GetCsvHeader: string; static;
     constructor Create(Id: Integer; SiteName, UserName, Password, Address, Remarks: string);
+    function CompareTo(theOther: TAccount): Integer;
     function ToString: string;
     property Id: Integer read FId;
     property SiteName: string read FSiteName write FSiteName;
@@ -55,6 +57,11 @@ type
     property Address: string read FAddress write FAddress;
     property Remarks: string read FRemarks write FRemarks;
     property LastWriteTime: TDateTime read FLastWriteTime write FLastWriteTime;
+  end;
+
+  TAccountComparer = class(TComparer<TAccount>)
+  public
+    function Compare(const Right, Left: TAccount): Integer; override;
   end;
 
   TDBSecurityOperation = (dsoOpen, dsoChange, dsoCreate);
@@ -120,6 +127,11 @@ begin
   FLastWriteTime := Now;
 end;
 
+function TAccount.CompareTo(theOther: TAccount): Integer;
+begin
+  Exit(Self.FSiteName.CompareTo(theOther.FSiteName));
+end;
+
 function TAccount.ToString: string;
 const
   DATE_TIME_FORMAT = 'yyyy/mm/dd hh:nn:ss';
@@ -130,6 +142,11 @@ begin
   FormattedDateTime := FormatDateTime(DATE_TIME_FORMAT, FLastWriteTime);
 
   Result := Format('%d,%s,%s,%s,%s,%s', [FId, FSiteName, FUserName, FAddress, FormattedRemarks, FormattedDateTime]);
+end;
+
+function TAccountComparer.Compare(const Right, Left: TAccount): Integer;
+begin
+  Exit(Right.CompareTo(Left));
 end;
 
 procedure TDBSecurityParam.SetConnectionParam(Params: TFDConnectionDefParams);
@@ -331,7 +348,9 @@ begin
     Result := True;
 
     Account.FId := FDBConnection.GetLastAutoGenValue('');
+
     FList.Add(Account);
+    FList.Sort(TAccountComparer.Create);
 
     if Assigned(FOnChange) then
       FOnChange(Self);
@@ -374,7 +393,9 @@ begin
     Result := True;
 
     Index := IndexOf(Account.Id);
+
     FList[Index] := Account;
+    FList.Sort(TAccountComparer.Create);
 
     if Assigned(FOnChange) then
       FOnChange(Self);
