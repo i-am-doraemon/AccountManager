@@ -10,12 +10,15 @@ uses
   System.Variants,
 
   Vcl.Controls,
+  Vcl.Clipbrd,
   Vcl.Dialogs,
+  Vcl.ExtCtrls,
   Vcl.Forms,
   Vcl.Graphics,
+  Vcl.StdCtrls,
 
   Winapi.Messages,
-  Winapi.Windows, Vcl.ExtCtrls, Vcl.StdCtrls;
+  Winapi.Windows;
 
 type
   TIndexNotifyEvent = procedure(Sender: TObject; Index: Integer) of object;
@@ -38,8 +41,13 @@ type
     RemarksLabel: TLabel;
     DoShowRemarks: TMemo;
 
+    DoCopyLocation: TButton;
+    DoCopyUserName: TButton;
+
     procedure OnDoChoose(Sender: TObject);
     procedure OnDoCopyToClipBoard(Sender: TObject);
+    procedure OnDoCopyLocation(Sender: TObject);
+    procedure OnDoCopyUserName(Sender: TObject);
   private
     { Private êÈåæ }
     FId: Integer;
@@ -82,6 +90,16 @@ procedure TViewAccount.OnDoCopyToClipBoard(Sender: TObject);
 begin
   if Assigned(FOnCopyToClipBoard) then
     FOnCopyToClipBoard(Self, FId);
+end;
+
+procedure TViewAccount.OnDoCopyLocation(Sender: TObject);
+begin
+  Clipboard.AsText := DoShowAddress.Text;
+end;
+
+procedure TViewAccount.OnDoCopyUserName(Sender: TObject);
+begin
+  Clipboard.AsText := DoShowUserName.Text;
 end;
 
 procedure TViewAccount.Clear;

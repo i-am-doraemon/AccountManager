@@ -49,7 +49,7 @@ object ViewAccount: TViewAccount
     object DoShowAddress: TEdit
       Left = 77
       Top = 53
-      Width = 220
+      Width = 160
       Height = 21
       ReadOnly = True
       TabOrder = 0
@@ -57,7 +57,7 @@ object ViewAccount: TViewAccount
     object DoShowUserName: TEdit
       Left = 77
       Top = 85
-      Width = 220
+      Width = 160
       Height = 21
       ReadOnly = True
       TabOrder = 1
@@ -87,6 +87,24 @@ object ViewAccount: TViewAccount
       Style = csDropDownList
       TabOrder = 4
       OnSelect = OnDoChoose
+    end
+    object DoCopyLocation: TButton
+      Left = 247
+      Top = 51
+      Width = 50
+      Height = 25
+      Caption = #12467#12500#12540
+      TabOrder = 5
+      OnClick = OnDoCopyLocation
+    end
+    object DoCopyUserName: TButton
+      Left = 247
+      Top = 83
+      Width = 50
+      Height = 25
+      Caption = #12467#12500#12540
+      TabOrder = 6
+      OnClick = OnDoCopyUserName
     end
   end
 end
