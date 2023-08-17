@@ -47,6 +47,7 @@ type
 
   TPasswordGenerator = class(TObject)
   private
+    FIniFileName: string;
     FLength: Integer;
     FCharSet: TCharSet;
     function GetRandomizedCharacter(CharSet: TCharSet): Char;
@@ -59,6 +60,7 @@ type
   public
     constructor Create(IniFileName: string);
     function Generate: string;
+    function Save: Boolean;
     property Length: Integer read FLength write FLength;
     property UseLowerCase: Boolean read IsUseLowerCase write EnableUseLowerCase;
     property UseUpperCase: Boolean read IsUseUpperCase write EnableUseUpperCase;
@@ -157,7 +159,8 @@ var
 begin
   inherited Create;
 
-  IniFile := TIniFile.Create(IniFileName);
+  FIniFileName := IniFileName;
+  IniFile := TIniFile.Create(FIniFileName);
   try
     FLength := IniFile.ReadInteger(SECTION_NAME, 'LENGTH', 12);
 
@@ -270,6 +273,28 @@ begin
   finally
     Apendable.Free;
   end;
+end;
+
+function TPassWordGenerator.Save: Boolean;
+const
+  SECTION_NAME = 'PASSWORD';
+var
+  IniFile: TIniFile;
+begin
+  IniFile := TIniFile.Create(FIniFileName);
+  try
+    IniFile.WriteInteger(SECTION_NAME, 'LENGTH', FLength);
+
+    IniFile.WriteBool(SECTION_NAME, 'USE_DIGITS', IsUseDigits);
+    IniFile.WriteBool(SECTION_NAME, 'USE_LOWER_CASE', IsUseLowerCase);
+    IniFile.WriteBool(SECTION_NAME, 'USE_UPPER_CASE', IsUseUpperCase);
+  except
+    on E: Exception do
+      Exit(False);
+  end;
+  IniFile.Free;
+
+  Exit(True);
 end;
 
 procedure TPasswordGenerator.EnableUseDigits(Enable: Boolean);

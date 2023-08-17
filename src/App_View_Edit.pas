@@ -112,6 +112,9 @@ begin
   FPasswordGenerator.UseDigits := Preferences.UseDigits;
   FPasswordGenerator.UseLowerCase := Preferences.UseLowerCase;
   FPasswordGenerator.UseUpperCase := Preferences.UseUpperCase;
+
+  if not FPasswordGenerator.Save then
+    ShowMessage('設定ファイルを保存できませんでした。');
 end;
 
 procedure TEditAccount.Clear;
